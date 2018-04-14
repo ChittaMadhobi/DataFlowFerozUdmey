@@ -1,0 +1,112 @@
+<html>
+
+<head>
+    <title> WB to DF Connection </title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script type="text/javascript">
+
+        var conversation = [];
+        //var accessToken = "f0674d6d388749a28c5e476f4c823d73";
+        var accessToken = "8752d1067e904b20a5004db0ac84cdd8";
+        var baseUrl = "https://api.api.ai/v1/";
+
+        $(document).ready(function () {
+            $("button ").click(function () {
+                event.preventDefault();
+                sendtodf();
+            })
+        });
+        $(document).ready(function () {
+            $("#input").keypress(function (event) {
+                if (event.which == 13) {
+                    event.preventDefault();
+                    sendtodf();
+                }
+            });
+        });
+// tried url: https://api.dialogflow.com/v1/query?v=20150910 directly - same error
+        function sendtodf() {
+
+            var text = $("#input").val();
+            document.getElementById("message").innerHTML = '<b>' + text + '</b>';
+            conversation.push("ME:" + text + "\r\n\n");
+            $.ajax({
+                type: "POST",
+                url: baseUrl + "query?v=20170712",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                headers: {
+                    "Authorization": "Bearer 8752d1067e904b20a5004db0ac84cdd8"
+                },
+                data: JSON.stringify({
+                    query: text,
+                    lang: "en",
+                    sessionId: "mysessionid"
+                }),
+                success: function (data) {
+
+                    processResponse(data);
+
+                },
+                error: function () {
+                    processResponse("Internal Server Error");
+                }
+            });
+        }
+
+
+        function processResponse(data) {
+            document.getElementById("message1").innerHTML = '<b>' + data + '</b>';            
+            var responsetext = data.result.fulfillment.speech;
+            var jsonres = JSON.stringify(data, undefined, 2);
+            conversation.push("BOT:" + responsetext + "\r\n\n");
+            $("#chatview").text(conversation.join(""));
+            $("#jsonresponse").text(jsonres);
+
+        }
+
+
+
+    </script>
+
+    <style type="text/css">
+        body { 
+            width: 500px;
+            margin: 0 auto;
+            text-align: center;
+            margin-top: 20px;
+        }
+        div { position: absolute; }
+        input { width: 250px; }
+        button { width: 50px; }
+        textarea { width: 100%; }
+    </style>
+
+</head>
+
+<body>
+    <iframe
+        width="350 "
+        height="430 "
+        src="https://console.dialogflow.com/api-client/demo/embedded/d859a5db-6e1f-4984-b273-692346d3da55 ">
+    </iframe>
+    <h1>Bot testing Web Page</h1>
+    <br>Message from input:
+    <span id="message">...</span>
+    <br>Message from output:
+    <span id="message1">...</span>
+    <div>
+        <br> JSON RESPONSE
+        <br>
+        <textarea id="jsonresponse" cols="30" rows="10"> </textarea>
+        <br> CHAT VIEW
+        <br>
+        <textarea id="chatview" cols="30" rows="10"></textarea>
+        <input id="input" type="text">
+        <button id="rec">SEND</button>
+    </div>
+
+</body>
+
+</html>
